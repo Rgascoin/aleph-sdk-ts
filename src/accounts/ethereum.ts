@@ -32,6 +32,10 @@ class ETHAccount extends Account {
             resolve(this.wallet.signMessage(buffer.toString()));
         });
     }
+
+    override getSecret(): string {
+        return this.wallet.privateKey;
+    }
 }
 
 /**

@@ -2,6 +2,7 @@ import { Account, ChainType } from "./account";
 import { BaseMessage, GetVerificationBuffer } from "../messages/message";
 import * as solanajs from "@solana/web3.js";
 import nacl from "tweetnacl";
+import base58 from "bs58";
 
 /**
  * SOLAccount implements the Account class for the Solana protocol.
@@ -41,6 +42,10 @@ class SOLAccount extends Account {
                 }),
             );
         });
+    }
+
+    override getSecret(): string {
+        return base58.encode(this.wallet.secretKey);
     }
 }
 

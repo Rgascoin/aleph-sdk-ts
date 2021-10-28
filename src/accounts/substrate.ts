@@ -43,6 +43,10 @@ class DOTAccount extends Account {
             );
         });
     }
+
+    override getSecret(): string {
+        return "";
+    }
 }
 
 /**

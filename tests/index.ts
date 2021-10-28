@@ -5,4 +5,6 @@ import * as aggregate from "../src/messages/aggregate/index";
 import * as post from "../src/messages/post/index";
 import * as store from "../src/messages/store/index";
 
-export { ethereum, solana, aggregate, post, store };
+import { encryption } from "../src/encryption/index";
+
+export { ethereum, solana, aggregate, post, store, encryption };

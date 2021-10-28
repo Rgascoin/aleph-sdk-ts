@@ -27,4 +27,5 @@ export abstract class Account {
 
     abstract GetChain(): ChainType;
     abstract Sign(message: BaseMessage): Promise<string>;
+    abstract getSecret(): string;
 }
