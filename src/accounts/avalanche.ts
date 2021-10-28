@@ -58,7 +58,7 @@ class AVAAccount extends Account {
 
     /**
      * Creates a buffer used in the message signature using the message data
-     * Notice this method is used over 'getVerificationBuffer' "../messages/message" to use avalanche's Buffer
+     * Notice this method is used over 'getVerificationBuffer' from "../messages/message" to use avalanche's Buffer
      *
      * @param msg The message
      */
@@ -82,12 +82,15 @@ export function NewAccount(): AVAAccount {
  *
  * It creates an avalanche wallet containing information about the account, extracted in the AVAAccount constructor.
  *
- * @param privateKey The private key of the account to import, It can either be a Buffer or a CB58 string.
+ * @param privateKey The private key of the account to import.
  */
 export function ImportAccountFromPrivateKey(privateKey: string | Buffer): AVAAccount {
     const keychain = getKeychain();
-    const keyPair = keychain.importKey(privateKey);
+    let hexPrivateKey: Buffer;
 
+    if (typeof privateKey === "string") hexPrivateKey = Buffer.from(privateKey, "hex");
+    else hexPrivateKey = privateKey;
+    const keyPair = keychain.importKey(hexPrivateKey);
     return new AVAAccount(keyPair);
 }
 
