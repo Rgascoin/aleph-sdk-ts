@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import * as bip39 from "bip39";
 import { Account, ChainType } from "./account";
 import { BaseMessage, GetVerificationBuffer } from "../messages/message";
+import { curves, encryption } from "../encryption";
 
 /**
  * ETHAccount implements the Account class for the Ethereum protocol.
@@ -33,8 +34,31 @@ class ETHAccount extends Account {
         });
     }
 
-    override getSecret(): string {
-        return this.wallet.privateKey;
+    /**
+     * Decrypt a given content using an ETHAccount
+     *
+     * @param userAccount The user's account
+     * @param content The encrypted content to decrypt
+     * @param as_hex Was the content encrypted as hexadecimal ?
+     * @param as_string Was the content encrypted as a string ?
+     */
+    override async Decrypt(
+        content: encryption.DecryptContent,
+        { as_hex = true, as_string = true }: encryption.EncryptionOpts = {},
+    ): Promise<Buffer | Uint8Array | string> {
+        const curve = encryption.getCurveFromAccount(this);
+        let result: Buffer | Uint8Array | string | null;
+        let localContent: Buffer;
+
+        if (as_hex) localContent = Buffer.from(content, "hex");
+        else localContent = Buffer.from(content);
+
+        const secret = this.wallet.privateKey;
+        result = await curves.curvesDecryption[curve](secret, localContent);
+
+        if (result === null) throw new Error("could not decrypt");
+        if (as_string) result = result.toString();
+        return result;
     }
 }
 

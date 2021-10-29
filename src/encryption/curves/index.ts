@@ -9,7 +9,7 @@ export const curvesEncryption: { [key: string]: (pkey: string, content: Buffer) 
 };
 
 export const curvesDecryption: {
-    [key: string]: (pkey: string, content: Buffer) => Promise<Uint8Array | null> | Promise<Buffer>;
+    [key: string]: (pkey: string, content: Buffer) => Promise<Uint8Array | null> | Promise<Buffer | Uint8Array | null>;
 } = {
     secp256k1: secp256k1Decryption,
     secp256r1: secp256r1Decryption,

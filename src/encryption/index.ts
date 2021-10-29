@@ -1,3 +1,4 @@
 import * as encryption from "./encryption";
+import * as curves from "./curves/index";
 
-export { encryption };
+export { encryption, curves };

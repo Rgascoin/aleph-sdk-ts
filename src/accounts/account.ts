@@ -1,4 +1,5 @@
 import { BaseMessage } from "../messages/message";
+import { encryption } from "../encryption";
 
 /**
  * ChainType defines which account was used to publish a message.
@@ -27,5 +28,8 @@ export abstract class Account {
 
     abstract GetChain(): ChainType;
     abstract Sign(message: BaseMessage): Promise<string>;
-    abstract getSecret(): string;
+    abstract Decrypt(
+        content: encryption.DecryptContent,
+        opt: encryption.EncryptionOpts,
+    ): Promise<Buffer | Uint8Array | string>;
 }

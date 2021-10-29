@@ -13,7 +13,7 @@ describe("Encryption accounts", () => {
 
         const content = "This is just a test.";
         const cipher = await encryption.encryptForSelf(ethAccount, content);
-        const decipher = await encryption.decrypt(ethAccount, cipher.toString());
+        const decipher = await ethAccount.Decrypt(cipher.toString());
 
         expect(decipher).toBe(content);
     });

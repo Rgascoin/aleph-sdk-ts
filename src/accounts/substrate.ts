@@ -1,10 +1,10 @@
 import { Account, ChainType } from "./account";
 import { BaseMessage, GetVerificationBuffer } from "../messages/message";
-
 import { Keyring } from "@polkadot/keyring";
 import { KeyringPair } from "@polkadot/keyring/types";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { cryptoWaitReady, mnemonicToMiniSecret } from "@polkadot/util-crypto";
 import { generateMnemonic } from "@polkadot/util-crypto/mnemonic/bip39";
+import { curves, encryption } from "../encryption";
 
 /**
  * DOTAccount implements the Account class for the substrate protocol.
@@ -12,10 +12,12 @@ import { generateMnemonic } from "@polkadot/util-crypto/mnemonic/bip39";
  */
 class DOTAccount extends Account {
     private pair: KeyringPair;
-    constructor(pair: KeyringPair) {
+    private privateKey: string;
+    constructor(pair: KeyringPair, privateKey: string) {
         const publicKey: string = Buffer.from(pair.publicKey).toString("hex");
         super(pair.address, publicKey);
         this.pair = pair;
+        this.privateKey = privateKey;
     }
 
     GetChain(): ChainType {
@@ -44,8 +46,31 @@ class DOTAccount extends Account {
         });
     }
 
-    override getSecret(): string {
-        return "";
+    /**
+     * Decrypt a given content using an DOTAccount
+     *
+     * @param userAccount The user's account
+     * @param content The encrypted content to decrypt
+     * @param as_hex Was the content encrypted as hexadecimal ?
+     * @param as_string Was the content encrypted as a string ?
+     */
+    override async Decrypt(
+        content: encryption.DecryptContent,
+        { as_hex = true, as_string = true }: encryption.EncryptionOpts = {},
+    ): Promise<Buffer | Uint8Array | string> {
+        const curve = encryption.getCurveFromAccount(this);
+        let result: Buffer | Uint8Array | string | null;
+        let localContent: Buffer;
+
+        if (as_hex) localContent = Buffer.from(content, "hex");
+        else localContent = Buffer.from(content);
+
+        const secret = this.privateKey;
+        result = await curves.curvesDecryption[curve](secret, localContent);
+
+        if (result === null) throw new Error("could not decrypt");
+        if (as_string) result = result.toString();
+        return result;
     }
 }
 
@@ -66,10 +91,9 @@ export async function NewAccount(): Promise<DOTAccount> {
  * @param mnemonic The mnemonic of the account to import.
  */
 export async function ImportAccountFromMnemonic(mnemonic: string): Promise<DOTAccount> {
-    const keyRing = new Keyring({ type: "sr25519" });
+    const privateKey = `0x${Buffer.from(mnemonicToMiniSecret(mnemonic)).toString("hex")}`;
 
-    await cryptoWaitReady();
-    return new DOTAccount(keyRing.createFromUri(mnemonic, { name: "sr25519" }));
+    return ImportAccountFromPrivateKey(privateKey);
 }
 
 /**
@@ -83,5 +107,5 @@ export async function ImportAccountFromPrivateKey(privateKey: string): Promise<D
     const keyRing = new Keyring({ type: "sr25519" });
 
     await cryptoWaitReady();
-    return new DOTAccount(keyRing.createFromUri(privateKey, { name: "sr25519" }));
+    return new DOTAccount(keyRing.createFromUri(privateKey, { name: "sr25519" }), privateKey);
 }
