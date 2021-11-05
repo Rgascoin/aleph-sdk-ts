@@ -6,4 +6,4 @@ import * as aggregate from "../src/messages/aggregate/index";
 import * as post from "../src/messages/post/index";
 import * as store from "../src/messages/store/index";
 
-export { ethereum, solana, aggregate, avalanche, post, store };
+export { ethereum, solana, avalanche, aggregate, post, store };

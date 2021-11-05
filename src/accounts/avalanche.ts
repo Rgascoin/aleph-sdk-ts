@@ -3,6 +3,8 @@ import { BaseMessage } from "../messages/message";
 import { KeyChain, KeyPair } from "avalanche/dist/apis/avm/keychain";
 import { Avalanche, BinTools, Buffer } from "avalanche";
 import { createHash } from "crypto";
+import * as bip32 from "bip32";
+import * as bip39 from "bip39";
 
 /**
  * Imports an avalanche account given a private key and the 'avalanche' package.
@@ -70,11 +72,19 @@ class AVAAccount extends Account {
 /**
  * Creates a new avalanche account using a generated mnemonic following BIP 39 standard.
  */
-export function NewAccount(): AVAAccount {
-    const keyChain = getKeychain();
-    const keyPair = keyChain.makeKey();
+export async function NewAccount(): Promise<{ account: AVAAccount; mnemonic: string }> {
+    const mnemonic = bip39.generateMnemonic();
 
-    return new AVAAccount(keyPair);
+    return { account: await ImportAccountFromMnemonic(mnemonic), mnemonic: mnemonic };
+}
+
+export async function ImportAccountFromMnemonic(mnemonic: string): Promise<AVAAccount> {
+    const v = await bip39.mnemonicToSeed(mnemonic);
+    const b = bip32.fromSeed(v);
+
+    if (!b || !b.privateKey) throw new Error("could not import from mnemonic");
+    const privateKey = b.privateKey.toString("hex");
+    return ImportAccountFromPrivateKey(privateKey);
 }
 
 /**
